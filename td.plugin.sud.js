@@ -1,5 +1,5 @@
 /**
- * @author: verdyckb
+ * @author: verdyckb @troti13
  * @name: TD.browser
  * @version: 0.0.1
  * @date: 17/01/12
@@ -404,6 +404,8 @@
 
 (function (window, TD) {
 	var resizeTimer;
+
+	if(!TD.mq.screen) { alert('No responsive stylesheets found in head'); return false; }
 
 	function init() {
 		var html, wrapper, clearfix, clear, left, right, browser, close, os, mqinfo;
