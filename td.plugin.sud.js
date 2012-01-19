@@ -282,124 +282,188 @@
      *  @parameters:    None
      *  @usage:         TD.mq || TD.mq.screen || ...
      */
-    TD.mq = (function() {
-        var mq = {};
 
-        mq.minRegex = /min-width:(.*)[px]/i;
-        mq.maxRegex = /max-width:(.*)[px]/i;
+	TD.mq = (function() {
+        var mq = {
+	        minRegex:       /min-(device-){0,1}width:( *)(\d+)px/gi,
+	        maxRegex:       /max-(device-){0,1}width:( *)(\d+)px/gi,
+	        windowWidth:    window.innerWidth || document.body.clientWidth || document.documentElement.clientWidth,
+	        stylesheets:    document.styleSheets
+        };
 
-        mq.selectStylesheets = function(sheets) {
-            var i, length, selected, sheet;
+		mq.init = function() {
+			mq.stylesheets = selectStylesheets(mq.stylesheets);
+			mq.queries = parseStylesheets(mq.stylesheets);
+			getCurrentMQ();
+		};
+
+		function selectStylesheets(sheets) {
+			var i, length, selected, sheet, media;
 
             selected = [];
 
             for(i = 0, length = sheets.length; i < length; i += 1) {
                 sheet = sheets[i];
 
-                if(sheet.rel && sheet.rel === "stylesheet" && sheet.media) {
-                    selected.push(sheet);
-                }
+	            media = sheet.media || "";
+
+	            // if sheets are not for print
+                if(sheet.media.mediaText && sheet.media.mediaText.indexOf('print') >= 0) { continue; }
+                if(sheet.media.toString().indexOf('print') >= 0) { continue; }
+
+	            selected.push(sheet);
             }
 
             return selected;
-        };
+		}
 
-        mq.getMediaQueries = function(sheets) {
-            var i, length, sheet, media, layouts, layout;
+		function parseStylesheets(sheets) {
+			var i, sheetLength, layouts, layout, sheetmedia, media, sheet, rules, rule, j, rulesLength;
 
-            layouts = [];
+			layouts = {};
 
-            for(i = 0, length = sheets.length; i < length; i += 1) {
+            for(i = 0, sheetLength = sheets.length; i < sheetLength; i += 1) {
                 sheet = sheets[i];
-                if(!sheet.media) { continue; }
-                media = sheet.media;
 
-                layout = {};
-                layout.min = media.match(this.minRegex);
-                layout.max = media.match(this.maxRegex);
+	            if(sheet.media) {
+		            if(sheet.media.hasOwnProperty('mediaText')) {
+			            sheetmedia = sheet.media.mediaText;
+		            } else {
+			            sheetmedia = sheet.media;
+		            }
 
-	            if(!layout.min && !layout.max) { continue; }
+		            if(sheetmedia && sheetmedia.indexOf('print') < 0) {
+			            layout = {};
+                        layout.min = sheetmedia.match(mq.minRegex);
+                        layout.max = sheetmedia.match(mq.maxRegex);
 
-                if(layout.min) {
-                    layout.min = parseInt(layout.min[1], 10);
-                } else {
-                    layout.min = null;
-                }
+			            if(layout.min || layout.max) {
+				            if(layout.min) {
+                                layout.min = layout.min[0].split(':')[1];
+                                layout.min = parseInt(layout.min, 10);
+                            } else {
+                                layout.min = 0;
+                            }
+                            if(layout.max) {
+                                layout.max = layout.max[0].split(':')[1];
+                                layout.max = parseInt(layout.max, 10);
+                            } else {
+                                layout.max = 'to infinity and beyond!';
+                            }
 
-                if(layout.max) {
-                    layout.max = parseInt(layout.max[1], 10);
-                } else {
-                    layout.max = null;
-                }
+				            layout.query = sheetmedia;
+                            layouts[layout.min] = layouts[layout.min] || [];
+                            layouts[layout.min].push(layout);
+			            }
+		            }
+	            }
 
-                layout.query = media;
-                layouts.push(layout);
+	            try {
+	                rules = sheet.cssRules || sheet.rules || null;
+	            } catch(e) {
+		            TD.log('Failed to parse stylesheet with error: ', e);
+		            return false;
+	            }
+
+	            if(rules) {
+	                for(j = 0, rulesLength = rules.length; j < rulesLength; j += 1) {
+		                rule = rules[j];
+
+		                // if rule doesn't contain media query
+		                if(!rule.media) { continue; }
+
+		                media = rule.media.mediaText || rule.media;
+		                if(media.indexOf('print') >= 0) { continue; }
+
+		                layout = {};
+                        layout.min = media.match(mq.minRegex);
+                        layout.max = media.match(mq.maxRegex);
+
+		                // if media query doesn't contain min-width or max-width
+		                if(!layout.min && !layout.max) { continue; }
+
+		                if(layout.min) {
+			                layout.min = layout.min[0].split(':')[1];
+			                layout.min = parseInt(layout.min, 10);
+		                } else {
+			                layout.min = 0;
+		                }
+		                if(layout.max) {
+			                layout.max = layout.max[0].split(':')[1];
+			                layout.max = parseInt(layout.max, 10);
+		                } else {
+			                layout.max = 'to infinity and beyond!';
+		                }
+
+		                layout.query = media;
+
+		                layouts[layout.min] = layouts[layout.min] || [];
+
+		                layouts[layout.min].push(layout);
+
+		                layouts[layout.min].sort(function(a, b) {
+                            if(typeof a.max == "string" && typeof b.max == typeof "") { return 0; }
+                            if(typeof a.max == "string") { return 1; }
+                            if(typeof b.max == "string") { return 1; }
+
+                            return a.max - b.max;
+                        });
+	                }
+	            }
             }
 
-            layouts.sort(function(a, b) {
-                return (a.min - b.min);
-            });
+			return layouts;
+		}
 
-            return layouts;
-        };
+		function getCurrentMQ() {
+			var queries, key, i, length, currentLayout, layout, screen;
 
-        mq.getCurrentMediaQuery = function(layouts) {
-            var i, length, layout, windowWidth;
+			queries = mq.queries;
 
-	        if(window.innerWidth) {
-                windowWidth = window.innerWidth;
-	        } else {
-		        windowWidth = document.body.clientWidth;
-	        }
+			mq.windowWidth = window.innerWidth || document.body.clientWidth || document.documentElement.clientWidth;
 
-            for(i = 0, length = layouts.length; i < length; i += 1) {
-                layout = layouts[i];
+			currentLayout = [];
 
-                if(windowWidth > layout.min) {
-                    if(layout.max) {
-                        if(windowWidth < layout.max) {
-	                        mq.currentMQ = layout;
-                            return i + 1;
-                        }
-                    } else {
-	                    mq.currentMQ = layout;
-                        return i + 1;
-                    }
-                }
-            }
-        };
+			screen = 0;
+			for (key in queries) {
+			    if (queries.hasOwnProperty(key)) {
+				    //mq.currentMQ = queries[key];
+					if(key < mq.windowWidth) {
+						screen += 1;
+						currentLayout = queries[key];
+						mq.screen = screen;
+					} else {
+						break;
+					}
+			    }
+			}
 
-	    mq.onResizeTick = function() {
-		    mq.screen = mq.getCurrentMediaQuery(mq.layouts);
-	    };
+			for(i = 0, length = currentLayout.length; i < length; i += 1) {
+				layout = currentLayout[i];
+				if(typeof layout.max == "string" || layout.max >= mq.windowWidth) { mq.currentMQ = layout; }
+			}
+		}
 
-        mq.resize = function() {
-	        mq.windowWidth = window.innerWidth;
+        function resize() {
+	        mq.windowWidth = window.innerWidth || document.body.clientWidth || document.documentElement.clientWidth;
             clearTimeout(mq.resizeTimer);
-            mq.resizeTimer = setTimeout(mq.onResizeTick, 10);
-        };
-
-        if(document.querySelectorAll) {
-            mq.stylesheets = document.querySelectorAll('link[rel=stylesheet][media]');
-        } else {
-            mq.stylesheets = document.getElementsByTagName('link');
-            mq.stylesheets = mq.selectStylesheets(mq.stylesheets);
+            mq.resizeTimer = setTimeout(getCurrentMQ, 10);
         }
 
-        mq.windowWidth = window.innerWidth;
-        mq.layouts = mq.getMediaQueries(mq.stylesheets);
-        mq.screen = mq.getCurrentMediaQuery(mq.layouts);
+		mq.init();
 
-	    if(window.addEventListener) {
-            window.addEventListener('resize', mq.resize, true);
+		if(window.addEventListener) {
+	        window.addEventListener('resize', resize, true);
 	    } else {
-		    window.attachEvent('onresize', mq.resize);
+		    window.attachEvent('onresize', resize);
 	    }
 
-	    return mq;
+		window.TD = TD;
+
+		return mq;
+
     }());
 
-	window.TD = TD;
 }(window, window.TD || {}));
 
 (function (window, TD) {
@@ -478,6 +542,14 @@
 		wrapper.appendChild(mqinfo);
 
 		document.body.appendChild(wrapper);
+
+		if(window.addEventListener) {
+	        window.addEventListener('resize', onResize, true);
+			document.getElementById('td_plugin_sud_close').addEventListener('click', onClose, true);
+	    } else {
+		    window.attachEvent('onresize', onResize);
+			document.getElementById('td_plugin_sud_close').attachEvent('onclick', onClose);
+	    }
 	}
 
 	function onClose(e) {
@@ -500,14 +572,10 @@
 		}, 10);
 	}
 
-	init();
-
-	if(window.addEventListener) {
-        window.addEventListener('resize', onResize, true);
-		document.getElementById('td_plugin_sud_close').addEventListener('click', onClose, true);
-    } else {
-	    window.attachEvent('onresize', onResize);
-		document.getElementById('td_plugin_sud_close').attachEvent('onclick', onClose);
-    }
+	if(window.document.readyState === 'complete') {
+		init;
+	} else {
+		window.onload = init;
+	}
 
 }(window, window.TD || {}));
