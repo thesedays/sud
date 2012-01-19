@@ -541,7 +541,9 @@
 		wrapper.appendChild(clear);
 		wrapper.appendChild(mqinfo);
 
-		document.body.appendChild(wrapper);
+		if(!document.getElementById('td_plugin_sud_wrapper').length) {
+			document.body.appendChild(wrapper);
+		}
 
 		if(window.addEventListener) {
 	        window.addEventListener('resize', onResize, true);
@@ -572,10 +574,12 @@
 		}, 10);
 	}
 
-	if(window.document.readyState === 'complete') {
-		init();
-	} else {
-		window.onload = init;
+	if(!document.getElementById('td_plugin_sud_wrapper').length) {
+		if(window.document.readyState === 'complete') {
+			init();
+		} else {
+			window.onload = init;
+		}
 	}
 
 }(window, window.TD || {}));
