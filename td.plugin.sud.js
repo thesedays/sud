@@ -541,7 +541,7 @@
 		wrapper.appendChild(clear);
 		wrapper.appendChild(mqinfo);
 
-		if(!document.getElementById('td_plugin_sud_wrapper').length) {
+		if(!document.getElementById('td_plugin_sud_wrapper')) {
 			document.body.appendChild(wrapper);
 		}
 
@@ -574,7 +574,7 @@
 		}, 10);
 	}
 
-	if(!document.getElementById('td_plugin_sud_wrapper').length) {
+	if(!document.getElementById('td_plugin_sud_wrapper')) {
 		if(window.document.readyState === 'complete') {
 			init();
 		} else {
