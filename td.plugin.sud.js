@@ -573,7 +573,7 @@
 	}
 
 	if(window.document.readyState === 'complete') {
-		init;
+		init();
 	} else {
 		window.onload = init;
 	}
