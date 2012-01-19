@@ -499,7 +499,7 @@
 		wrapper.style.padding = '10px';
 		wrapper.style.position = 'fixed';
 		wrapper.style.top = '10px';
-		wrapper.style.zIndex = '9999';
+		wrapper.style.zIndex = '999999';
 		wrapper.style.filter = 'alpha(opacity=60,style=0)';
 		wrapper.id = 'td_plugin_sud_wrapper';
 
