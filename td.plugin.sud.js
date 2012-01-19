@@ -574,12 +574,10 @@
 		}, 10);
 	}
 
-	if(!document.getElementById('td_plugin_sud_wrapper')) {
-		if(window.document.readyState === 'complete') {
-			init();
-		} else {
-			window.onload = init;
-		}
+	if(window.document.readyState === 'complete') {
+		init();
+	} else {
+		window.onload = init;
 	}
 
 }(window, window.TD || {}));
