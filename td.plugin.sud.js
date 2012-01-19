@@ -541,9 +541,9 @@
 		wrapper.appendChild(clear);
 		wrapper.appendChild(mqinfo);
 
-		if(!document.getElementById('td_plugin_sud_wrapper')) {
+		//if(!document.getElementById('td_plugin_sud_wrapper')) {
 			document.body.appendChild(wrapper);
-		}
+		//}
 
 		if(window.addEventListener) {
 	        window.addEventListener('resize', onResize, true);
