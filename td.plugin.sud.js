@@ -1,5 +1,165 @@
 /**
- * @author: verdyckb @troti13
+ * @author: verdyckb
+ * @name: TD.plugin.SUD
+ * @version: 0.0.1
+ * @date: 17/01/12
+ * @dependencies: none
+ * @copyright: These Days
+ */
+
+
+
+/**
+ * @author: verdyckb
+ * @name: TD.os
+ * @version: 0.0.1
+ * @date: 17/01/12
+ * @dependencies:
+ * @copyright: These Days
+ */
+/* jslint devel: true, browser: true, maxerr: 50, indent: 4 */
+(function (window, TD) {
+    'use strict';
+
+    /*
+     *  @name:          TD.os
+     *  @Description:   All os info
+     *  @Parameters:    None
+     *  @Usage:         TD.os || TD.os.win
+    */
+	TD.os = (function() {
+		var appVersion, userAgent, os, win, linux, mac, unix, tmpArray, version, android, iphone, ipod, ipad;
+
+		os = {};
+		appVersion = navigator.appVersion.toLowerCase();
+		userAgent = navigator.userAgent.toLowerCase();
+
+		win = 'win';
+		mac = 'mac';
+		unix = 'x11';
+		linux = 'linux';
+		android = 'android';
+		iphone = 'iphone';
+		ipod = 'ipod';
+		ipad = 'ipad';
+
+		os.win = false;
+		os.mac = false;
+		os.unix = false;
+		os.linux = false;
+		os.android = false;
+		os.ios = false;
+		os.phone = false;
+		os.iphone = false;
+		os.ipad = false;
+
+		os.name = 'unknown';
+		os.version = 'unknown';
+
+		if(appVersion.indexOf(win) > -1) {
+			os.win = true;
+		}
+		if(appVersion.indexOf(mac) > -1) {
+			os.mac = true;
+		}
+		if(appVersion.indexOf(unix) > -1) {
+			os.unix = true;
+		}
+		if(appVersion.indexOf(linux) > -1) {
+			os.linux = true;
+		}
+		if(userAgent.indexOf(android) > -1) {
+			os.android = true;
+			os.phone = true;
+		}
+		if(userAgent.indexOf(ipod) > -1 || userAgent.indexOf(iphone) > -1 || userAgent.indexOf(ipad) > -1) {
+			os.ios = true;
+			os.mac = false;
+			os.phone = true;
+
+			if(userAgent.indexOf(ipod) > -1 || userAgent.indexOf(iphone) > -1) {
+				os.iphone = true;
+			} else {
+				os.ipad = true;
+			}
+		}
+
+		if(os.win) {
+			if(appVersion.indexOf('win16') >= -1) { version = '3.11'; }
+			if(appVersion.indexOf('95') >= -1) { version = '95'; }
+			if(appVersion.indexOf('98') >= -1) { version = '98'; }
+			if(appVersion.indexOf('4.0') >= -1 || appVersion.indexOf('winnt') >= -1) { version = 'NT 4.0'; }
+			if(appVersion.indexOf('2000') >= -1 || appVersion.indexOf('nt 5.0') >= -1) { version = '2000'; }
+			if(appVersion.indexOf(' me ') >= -1) { version = 'ME'; }
+			if(appVersion.indexOf('xp') >= -1 || appVersion.indexOf('nt 5.1') >= -1) { version = 'XP'; }
+			if(appVersion.indexOf('nt 5.2') >= -1) { version = 'Server 2003'; }
+			if(appVersion.indexOf('nt 6.0') >= -1) { version = 'Vista'; }
+			if(appVersion.indexOf('nt 7.0') >= -1 || appVersion.indexOf('nt 6.1') >= -1) { version = '7'; }
+
+			os.name = 'Microsoft Windows';
+			os.version = version;
+		}
+		if(os.mac) {
+			tmpArray = userAgent.split('mac os x ');
+			if(tmpArray[1]) {
+				version = tmpArray[1];
+				version = version.split(';');
+				if(version[0]) {
+					version = version[0];
+					version = version.replace(/_/g, '.');
+				}
+
+				if(version.indexOf(')')) {
+					version = version.split(')');
+					version = version[0];
+				}
+			} else {
+				version = 'unknown';
+			}
+			os.version = 'OS X ' + version;
+			os.name = 'Mac';
+		}
+		if(os.unix) {
+			os.name = 'Unix';
+		}
+		if(os.linux) {
+			os.name = 'Linux';
+		}
+		if(os.android) {
+			tmpArray = userAgent.split('android ');
+			if(tmpArray[1]) {
+				version = tmpArray[1].split(';');
+				version = version[0];
+			}
+			os.version = version;
+			os.name = 'Android';
+		}
+		if(os.ios) {
+			tmpArray = userAgent.split(' os ');
+			version = tmpArray[1];
+			version = version.split(' ');
+			if(version[0]) {
+				version = version[0];
+				version = version.replace(/_/g, '.');
+			}
+			os.version = version;
+			os.name = 'iOS';
+			if(os.iphone) {
+				os.name = 'iOS iPhone/iPod';
+			}
+			if(os.ipad) {
+				os.name = 'iOS iPad';
+			}
+		}
+
+		return os;
+	}());
+
+	window.TD = TD;
+}(window, window.TD || {}));
+
+/**
+ * @author: verdyckb
  * @name: TD.browser
  * @version: 0.0.1
  * @date: 17/01/12
@@ -8,6 +168,7 @@
  */
 
 /* jslint devel: true, browser: true, maxerr: 50, indent: 4 */
+
 (function (window, TD) {
     'use strict';
 
@@ -123,158 +284,12 @@
 
 /**
  * @author: verdyckb
- * @name: TD.os
- * @version: 0.0.1
- * @date: 17/01/12
- * @dependencies:
- * @copyright: These Days
- */
-
-/* jslint devel: true, browser: true, maxerr: 50, indent: 4 */
-(function (window, TD) {
-    'use strict';
-
-    /*
-     *  @name:          TD.os
-     *  @Description:   All os info
-     *  @Parameters:    None
-     *  @Usage:         TD.os || TD.os.win
-    */
-	TD.os = (function() {
-		var appVersion, userAgent, os, win, linux, mac, unix, tmpArray, version, android, iphone, ipod, ipad;
-
-		os = {};
-		appVersion = navigator.appVersion.toLowerCase();
-		userAgent = navigator.userAgent.toLowerCase();
-
-		win = 'win';
-		mac = 'mac';
-		unix = 'x11';
-		linux = 'linux';
-		android = 'android';
-		iphone = 'iphone';
-		ipod = 'ipod';
-		ipad = 'ipad';
-
-		os.win = false;
-		os.mac = false;
-		os.unix = false;
-		os.linux = false;
-		os.android = false;
-		os.ios = false;
-		os.phone = false;
-		os.iphone = false;
-		os.ipad = false;
-
-		os.name = 'unknown';
-		os.version = 'unknown';
-
-		if(appVersion.indexOf(win) > -1) {
-			os.win = true;
-		}
-		if(appVersion.indexOf(mac) > -1) {
-			os.mac = true;
-		}
-		if(appVersion.indexOf(unix) > -1) {
-			os.unix = true;
-		}
-		if(appVersion.indexOf(linux) > -1) {
-			os.linux = true;
-		}
-		if(userAgent.indexOf(android) > -1) {
-			os.android = true;
-			os.phone = true;
-		}
-		if(userAgent.indexOf(ipod) > -1 || userAgent.indexOf(iphone) > -1 || userAgent.indexOf(ipad) > -1) {
-			os.ios = true;
-			os.mac = false;
-			os.phone = true;
-
-			if(userAgent.indexOf(ipod) > -1 || userAgent.indexOf(iphone) > -1) {
-				os.iphone = true;
-			} else {
-				os.ipad = true;
-			}
-		}
-
-		if(os.win) {
-			if(appVersion.indexOf('win16') >= -1) { version = '3.11'; }
-			if(appVersion.indexOf('95') >= -1) { version = '95'; }
-			if(appVersion.indexOf('98') >= -1) { version = '98'; }
-			if(appVersion.indexOf('4.0') >= -1 || appVersion.indexOf('winnt') >= -1) { version = 'NT 4.0'; }
-			if(appVersion.indexOf('2000') >= -1 || appVersion.indexOf('nt 5.0') >= -1) { version = '2000'; }
-			if(appVersion.indexOf(' me ') >= -1) { version = 'ME'; }
-			if(appVersion.indexOf('xp') >= -1 || appVersion.indexOf('nt 5.1') >= -1) { version = 'XP'; }
-			if(appVersion.indexOf('nt 5.2') >= -1) { version = 'Server 2003'; }
-			if(appVersion.indexOf('nt 6.0') >= -1) { version = 'Vista'; }
-			if(appVersion.indexOf('nt 7.0') >= -1 || appVersion.indexOf('nt 6.1') >= -1) { version = '7'; }
-
-			os.name = 'Microsoft Windows';
-			os.version = version;
-		}
-		if(os.mac) {
-			tmpArray = userAgent.split('mac os x ');
-			if(tmpArray[1]) {
-				version = tmpArray[1];
-				version = version.split(';');
-				if(version[0]) {
-					version = version[0];
-					version = version.replace(/_/g, '.');
-				}
-			} else {
-				version = 'unknown';
-			}
-			os.version = 'OS X ' + version;
-			os.name = 'Mac';
-		}
-		if(os.unix) {
-			os.name = 'Unix';
-		}
-		if(os.linux) {
-			os.name = 'Linux';
-		}
-		if(os.android) {
-			tmpArray = userAgent.split('android ');
-			if(tmpArray[1]) {
-				version = tmpArray[1].split(';');
-				version = version[0];
-			}
-			os.version = version;
-			os.name = 'Android';
-		}
-		if(os.ios) {
-			tmpArray = userAgent.split(' os ');
-			version = tmpArray[1];
-			version = version.split(' ');
-			if(version[0]) {
-				version = version[0];
-				version = version.replace(/_/g, '.');
-			}
-			os.version = version;
-			os.name = 'iOS';
-			if(os.iphone) {
-				os.name = 'iOS iPhone/iPod';
-			}
-			if(os.ipad) {
-				os.name = 'iOS iPad';
-			}
-		}
-
-		return os;
-	}());
-
-	window.TD = TD;
-}(window, window.TD || {}));
-
-/**
- * @author: verdyckb
  * @name: MediaQuery
  * @version: 0.0.1
  * @date: 4/11/11
  * @dependencies:
  * @copyright: These Days
  */
-
 (function (window, TD, undefined) {
     /**
      *  @name:          MediaQuery
@@ -329,7 +344,7 @@
 		            if(sheet.media.hasOwnProperty('mediaText')) {
 			            sheetmedia = sheet.media.mediaText;
 		            } else {
-			            sheetmedia = sheet.media;
+			            sheetmedia = "" + sheet.media;
 		            }
 
 		            if(sheetmedia && sheetmedia.indexOf('print') < 0) {
@@ -472,7 +487,11 @@
 	if(!TD.mq.screen) { alert('No responsive stylesheets found in head'); return false; }
 
 	function init() {
-		var html, wrapper, clearfix, clear, left, right, browser, close, os, mqinfo;
+		var html, wrapper, clearfix, clear, left, right, browser, close, os, mqinfo, el;
+
+		el = document.getElementById('td_plugin_sud_wrapper');
+
+		if(el) { return false; }
 
 		wrapper = document.createElement('div');
 		clearfix = document.createElement('div');
@@ -541,9 +560,7 @@
 		wrapper.appendChild(clear);
 		wrapper.appendChild(mqinfo);
 
-		//if(!document.getElementById('td_plugin_sud_wrapper')) {
-			document.body.appendChild(wrapper);
-		//}
+		document.body.appendChild(wrapper);
 
 		if(window.addEventListener) {
 	        window.addEventListener('resize', onResize, true);
@@ -565,12 +582,20 @@
 	function onResize() {
 		clearTimeout(resizeTimer);
 		resizeTimer = setTimeout(function() {
-			var screen, mqinfo;
+			var screen, mqinfo, min, max, current;
 			screen = document.getElementById('td_plugin_sud_screen');
 			screen.innerHTML = TD.mq.screen;
 
+			min = TD.mq.currentMQ.min;
+			max = TD.mq.currentMQ.max;
+			current = TD.mq.windowWidth;
+
+			if(typeof min != "string") { min += "px"; }
+			if(typeof max != "string") { max += "px"; }
+			if(typeof current != "string") { current += "px"; }
+
 			mqinfo = document.getElementById('td_plugin_sud_mqinfo');
-			mqinfo.innerHTML =  '<span style="font-size:12px; margin-right:10px;">min: ' + TD.mq.currentMQ.min + 'px</span><span style="font-size:12px; margin-right:10px;">max: ' + TD.mq.currentMQ.max + 'px</span><span style="font-size:12px;">current:' + TD.mq.windowWidth + 'px</span>';
+			mqinfo.innerHTML =  '<span style="font-size:12px; margin-right:10px;">min: ' + min + '</span><span style="font-size:12px; margin-right:10px;">max: ' + max + '</span><span style="font-size:12px;">current:' + current + '</span>';
 		}, 10);
 	}
 
