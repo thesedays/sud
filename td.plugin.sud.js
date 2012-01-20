@@ -484,14 +484,22 @@
 (function (window, TD) {
 	var resizeTimer;
 
-	if(!TD.mq.screen) { alert('No responsive stylesheets found in head'); return false; }
+	//if(!TD.mq.screen) { alert('No responsive stylesheets found in head'); return false; }
 
 	function init() {
-		var html, wrapper, clearfix, clear, left, right, browser, close, os, mqinfo, el;
+		var html, wrapper, clearfix, clear, left, right, browser, close, os, mqinfo, el, min, max, current;
 
 		el = document.getElementById('td_plugin_sud_wrapper');
 
 		if(el) { return false; }
+
+		min = TD.mq.currentMQ.min;
+		max = TD.mq.currentMQ.max;
+		current = TD.mq.windowWidth;
+
+		if(typeof min != "string") { min += "px"; }
+		if(typeof max != "string") { max += "px"; }
+		if(typeof current != "string") { current += "px"; }
 
 		wrapper = document.createElement('div');
 		clearfix = document.createElement('div');
@@ -506,7 +514,7 @@
 		left.innerHTML = TD.mq.screen;
 		browser.innerHTML = TD.browser.name + ' ' + TD.browser.version;
 		os.innerHTML = TD.os.name + ' ' + TD.os.version;
-		mqinfo.innerHTML =  '<span style="font-size:12px; margin-right:10px;">min: ' + TD.mq.currentMQ.min + 'px</span><span style="font-size:12px; margin-right:10px;">max: ' + TD.mq.currentMQ.max + 'px</span><span style="font-size:12px;">current:' + TD.mq.windowWidth + 'px</span>';
+		mqinfo.innerHTML =  '<span style="font-size:12px; margin-right:10px;">min: ' + min + '</span><span style="font-size:12px; margin-right:10px;">max: ' + max + '</span><span style="font-size:12px;">current:' + current + '</span>';
 		close.innerHTML = 'close x';
 
 		wrapper.style.background = '#333333';
